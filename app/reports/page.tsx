@@ -13,7 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, MapPin, Camera } from "lucide-react";
+import { Upload, MapPin, Camera, Navigation } from "lucide-react";
+import { useLocation } from "@/components/location-provider";
 
 export default function Reports() {
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -22,6 +23,8 @@ export default function Reports() {
   } | null>(null);
   const [issueType, setIssueType] = useState("");
   const [description, setDescription] = useState("");
+
+  const { location, hasPermission, requestLocation } = useLocation();
 
   const handleLocationSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -37,8 +40,16 @@ export default function Reports() {
     alert("Report submitted successfully!");
   };
 
+  const handleUseCurrentLocation = () => {
+    if (location) {
+      setSelectedLocation(location);
+    } else {
+      requestLocation();
+    }
+  };
+
   return (
-    <div className='p-6 h-screen overflow-y-auto'>
+    <div className='p-6 h-full overflow-y-auto'>
       <div className='max-w-full mx-auto'>
         <h1 className='text-2xl font-bold text-white mb-6 shuttle-glow'>
           Report an Issue
@@ -86,8 +97,20 @@ export default function Reports() {
               </div>
 
               <div>
-                <Label className='text-white'>Location</Label>
-                <div className='mt-2 p-3 bg-gray-800 rounded-md border border-gray-700'>
+                <div className='flex items-center justify-between mb-2'>
+                  <Label className='text-white'>Location</Label>
+                  {location && (
+                    <Button
+                      onClick={handleUseCurrentLocation}
+                      size='sm'
+                      variant='outline'
+                      className='border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent text-xs'>
+                      <Navigation className='h-3 w-3 mr-1' />
+                      Use Current Location
+                    </Button>
+                  )}
+                </div>
+                <div className='p-3 bg-gray-800 rounded-md border border-gray-700'>
                   {selectedLocation ? (
                     <div className='flex items-center gap-2 text-white'>
                       <MapPin className='h-4 w-4 text-white' />
@@ -133,10 +156,15 @@ export default function Reports() {
           <Card className='bg-gray-900 border-gray-800'>
             <CardHeader>
               <CardTitle className='text-white'>Select Location</CardTitle>
+              {!hasPermission && (
+                <p className='text-gray-400 text-sm'>
+                  Enable location access for more accurate positioning
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <MapComponent
-                height='600px'
+                height='500px'
                 onLocationSelect={handleLocationSelect}
               />
               <p className='text-gray-400 text-sm mt-2'>

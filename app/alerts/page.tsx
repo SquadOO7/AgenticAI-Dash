@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin, Trash2, Edit } from "lucide-react";
+import { Bell, MapPin, Trash2, Edit, Navigation } from "lucide-react";
+import { useLocation } from "@/components/location-provider";
 
 // Dummy alert subscriptions data
 const dummySubscriptions = [
@@ -48,6 +49,8 @@ export default function ManageAlerts() {
   const [frequency, setFrequency] = useState("");
   const [subscriptions, setSubscriptions] = useState(dummySubscriptions);
 
+  const { location, hasPermission } = useLocation();
+
   const handleCreateSubscription = () => {
     const newSubscription = {
       id: Date.now().toString(),
@@ -67,8 +70,16 @@ export default function ManageAlerts() {
     setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
   };
 
+  const handleUseCurrentLocation = () => {
+    if (location) {
+      setNewAlertLocation(
+        `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`
+      );
+    }
+  };
+
   return (
-    <div className='p-6 h-screen overflow-y-auto'>
+    <div className='p-6 h-full overflow-y-auto'>
       <div className='max-w-full mx-auto'>
         <h1 className='text-2xl font-bold text-white mb-6 shuttle-glow'>
           Manage Alerts
@@ -86,15 +97,27 @@ export default function ManageAlerts() {
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div>
-                  <Label htmlFor='alert-location' className='text-white'>
-                    Select Location
-                  </Label>
+                  <div className='flex items-center justify-between mb-2'>
+                    <Label htmlFor='alert-location' className='text-white'>
+                      Select Location
+                    </Label>
+                    {location && (
+                      <Button
+                        onClick={handleUseCurrentLocation}
+                        size='sm'
+                        variant='outline'
+                        className='border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white bg-transparent text-xs'>
+                        <Navigation className='h-3 w-3 mr-1' />
+                        Use Current
+                      </Button>
+                    )}
+                  </div>
                   <Input
                     id='alert-location'
                     placeholder='Enter location or area...'
                     value={newAlertLocation}
                     onChange={(e) => setNewAlertLocation(e.target.value)}
-                    className='mt-2 bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-white transition-all duration-200'
+                    className='bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-white transition-all duration-200'
                   />
                 </div>
 
@@ -166,9 +189,14 @@ export default function ManageAlerts() {
             <Card className='bg-gray-900 border-gray-800'>
               <CardHeader>
                 <CardTitle className='text-white'>Select Alert Area</CardTitle>
+                {!hasPermission && (
+                  <p className='text-gray-400 text-sm'>
+                    Enable location access to see your current position
+                  </p>
+                )}
               </CardHeader>
               <CardContent>
-                <MapComponent height='400px' />
+                <MapComponent height='300px' />
               </CardContent>
             </Card>
           </div>
@@ -179,7 +207,7 @@ export default function ManageAlerts() {
               <CardTitle className='text-white'>Active Subscriptions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='space-y-4 max-h-[700px] overflow-y-auto'>
+              <div className='space-y-4 max-h-[600px] overflow-y-auto'>
                 {subscriptions.map((subscription, index) => (
                   <div
                     key={subscription.id}

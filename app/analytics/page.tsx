@@ -15,9 +15,11 @@ import {
   TrendingDown,
   AlertTriangle,
   Calendar,
+  MapPin,
 } from "lucide-react";
+import { useLocation } from "@/components/location-provider";
 
-// Dummy analytics data
+// Dummy analytics data with static time strings
 const analyticsData = {
   totalIncidents: 12345,
   activeIncidents: 6788,
@@ -97,8 +99,10 @@ const heatmapIncidents = [
 ];
 
 export default function Analytics() {
+  const { location, hasPermission } = useLocation();
+
   return (
-    <div className='p-6 h-screen overflow-y-auto'>
+    <div className='p-6 h-full overflow-y-auto'>
       <div className='max-w-full mx-auto'>
         <div className='flex items-center justify-between mb-6'>
           <h1 className='text-2xl font-bold text-white shuttle-glow'>
@@ -118,6 +122,24 @@ export default function Analytics() {
             </Select>
           </div>
         </div>
+
+        {/* Location Status Banner */}
+        {!hasPermission && (
+          <div className='mb-6 p-4 bg-yellow-900 bg-opacity-20 border border-yellow-700 rounded-lg'>
+            <div className='flex items-center gap-3'>
+              <MapPin className='h-5 w-5 text-yellow-400' />
+              <div>
+                <p className='text-yellow-200 font-medium'>
+                  Location Access Disabled
+                </p>
+                <p className='text-yellow-300 text-sm'>
+                  Enable location access to see personalized analytics for your
+                  area
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Key Metrics */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-6'>
@@ -260,9 +282,15 @@ export default function Analytics() {
         <Card className='bg-gray-900 border-gray-800'>
           <CardHeader>
             <CardTitle className='text-white'>Incident Heatmap</CardTitle>
+            {!hasPermission && (
+              <p className='text-gray-400 text-sm'>
+                Showing citywide data. Enable location access for personalized
+                insights.
+              </p>
+            )}
           </CardHeader>
           <CardContent>
-            <MapComponent height='500px' incidents={heatmapIncidents} />
+            <MapComponent height='400px' incidents={heatmapIncidents} />
             <p className='text-gray-400 text-sm mt-2'>
               Interactive map showing incident density across the city
             </p>
