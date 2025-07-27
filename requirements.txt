@@ -1,0 +1,9 @@
+fastapi
+uvicorn 
+httpx
+python-dotenv
+requests
+numpy
+aiologger
+google-cloud-pubsub
+aiofiles
